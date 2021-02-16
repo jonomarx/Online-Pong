@@ -38,6 +38,7 @@ public class Client {
     public static final int HEIGHT = 500;
     private static InetAddress serverIp;
     private static String name;
+    private static int PORT = 1205;
     
     static {
         try {
@@ -52,7 +53,11 @@ public class Client {
     private static PollPool pool = new PollPool();
     
     public static void main(String[] args) throws SocketException, UnknownHostException, IOException {
-        socket = new DatagramSocket();
+        if(args.length == 1) {
+             socket = new DatagramSocket(Integer.parseInt(args[0]));
+        } else {
+            socket = new DatagramSocket();
+        }
         Timer t = new Timer(16, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -92,7 +97,7 @@ public class Client {
                                     public void run() {
                                         DatagramPacket packet = new DatagramPacket(new byte[1024], 0, 1024);
                                         packet.setAddress(serverIp);
-                                        packet.setPort(1205);
+                                        packet.setPort(PORT);
                                         packet.setData(("5|" + line[1]).getBytes());
                                         
                                         try {
@@ -121,7 +126,7 @@ public class Client {
                                 public void run() {
                                     DatagramPacket packet = new DatagramPacket(new byte[1024], 0, 1024);
                                     packet.setAddress(serverIp);
-                                    packet.setPort(1205);
+                                    packet.setPort(PORT);
                                     packet.setData(("3|" + name + "|" + line[1]).getBytes());
                                     try {
                                         socket.send(packet);
@@ -161,7 +166,7 @@ public class Client {
             public void run() {
                 DatagramPacket packet = new DatagramPacket(new byte[1024], 0, 1024);
                 packet.setAddress(serverIp);
-                packet.setPort(1205);
+                packet.setPort(PORT);
                 packet.setData(("5|getID").getBytes());
                 try {
                     socket.send(packet);
@@ -175,11 +180,12 @@ public class Client {
             name = task.waitUntilTermination();
             if(name == null) {
                 System.err.println("couldn't reach server, closing.");
+                System.out.println(name);
                 System.exit(0);
             }
             DatagramPacket packet = new DatagramPacket(new byte[1024], 0, 1024);
             packet.setAddress(serverIp);
-            packet.setPort(1205);
+            packet.setPort(PORT);
             packet.setData(("0|" + name).getBytes());
             
             socket.send(packet);
@@ -237,7 +243,7 @@ public class Client {
             if(keyTable != null) {
                 DatagramPacket packet = new DatagramPacket(new byte[1024], 0, 1024);
                 packet.setAddress(serverIp);
-                packet.setPort(1205);
+                packet.setPort(PORT);
                 packet.setData(("4|" + name + "|up|" + keyTable.isKeyPressed(KeyEvent.VK_W)).getBytes());
                 socket.send(packet);
                 
